@@ -9,13 +9,53 @@ if (!databaseUrl) {
   )
 }
 
-const useSsl = (process.env.PG_SSL ?? '').toLowerCase() === 'true'
+/**
+ * كشف تلقائي لحاجة SSL:
+ *  - داخل شبكة Railway الخاصة (postgres.railway.internal) → SSL مُعطّل.
+ *  - عبر بروكسي Railway العام (rlwy.net) أو مضيف Supabase/Neon/Render → SSL مُفعّل.
+ *  - يمكن إجبار القيمة عبر PG_SSL=true|false (يتجاوز الكشف التلقائي).
+ */
+function resolveSsl(url: string | undefined): false | { rejectUnauthorized: false } {
+  const explicit = (process.env.PG_SSL ?? '').toLowerCase()
+  if (explicit === 'true') return { rejectUnauthorized: false }
+  if (explicit === 'false') return false
+
+  if (!url) return false
+
+  // شبكة Railway الداخلية — لا SSL.
+  if (url.includes('.railway.internal')) return false
+  if (url.includes('localhost') || url.includes('127.0.0.1')) return false
+
+  // مزوّدون سحابيون يتطلّبون SSL.
+  const needsSsl = [
+    'rlwy.net',           // Railway public proxy
+    'railway.app',
+    'supabase.co',
+    'neon.tech',
+    'render.com',
+    'amazonaws.com',
+    'azure.com',
+    'gcp.neon',
+  ].some((h) => url.includes(h))
+
+  return needsSsl ? { rejectUnauthorized: false } : false
+}
+
+const ssl = resolveSsl(databaseUrl)
+
+// eslint-disable-next-line no-console
+console.log(
+  `[db] الاتصال بـ Postgres — SSL: ${ssl ? 'مُفعّل' : 'مُعطّل'}${
+    databaseUrl?.includes('.railway.internal') ? ' (شبكة Railway الداخلية)' : ''
+  }`,
+)
 
 export const pool = new Pool({
   connectionString: databaseUrl,
-  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
+  ssl: ssl || undefined,
   max: 10,
   idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
 })
 
 pool.on('error', (err) => {
