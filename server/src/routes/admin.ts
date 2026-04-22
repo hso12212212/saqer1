@@ -5,7 +5,7 @@ import {
   signAdminToken,
   verifyCredentials,
 } from '../auth.js'
-import { fileToUrl, upload } from '../upload.js'
+import { persistUpload, upload } from '../upload.js'
 
 export const adminRouter: Router = Router()
 
@@ -39,10 +39,14 @@ adminRouter.post(
   '/upload',
   requireAdmin,
   upload.array('files', 8),
-  (req: Request, res: Response) => {
-    const files = (req.files as Express.Multer.File[] | undefined) ?? []
-    const urls = files.map((f) => fileToUrl(f.filename))
-    res.json({ urls })
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const files = (req.files as Express.Multer.File[] | undefined) ?? []
+      const urls = await Promise.all(files.map((f) => persistUpload(f)))
+      res.json({ urls })
+    } catch (err) {
+      next(err)
+    }
   },
 )
 
