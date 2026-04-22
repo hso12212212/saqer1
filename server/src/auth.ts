@@ -5,8 +5,8 @@ import type { Request, Response, NextFunction, RequestHandler } from 'express'
 // ─── قيم الإنتاج الافتراضية (تعمل بدون أي متغيّرات بيئة) ───
 // يمكن تجاوزها بوضع متغيّرات على Railway إن أردت لاحقًا.
 // غيّر البريد/الكلمة هنا بعد أوّل دخول إن أحببت.
-const PROD_ADMIN_EMAIL = 'saqer@admin.com'
-const PROD_ADMIN_PASSWORD = 'Saqer@2026'
+const PROD_ADMIN_EMAIL = 'hswnbrys@gmail.com'
+const PROD_ADMIN_PASSWORD = 'iraqiraq'
 const PROD_JWT_SECRET =
   'saqer-production-jwt-secret-fixed-a7f3e912b8c4d5e6f0a1b2c3d4e5f6a7b8c9d0e1f2'
 
