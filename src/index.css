@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light; }
+  :root.dark { color-scheme: dark; }
+
+  html { -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: theme('colors.reno.300');
+    color: theme('colors.reno.900');
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-reno-400/40 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-reno-900 text-white hover:bg-reno-700 dark:bg-white dark:text-reno-900 dark:hover:bg-reno-100;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-reno-800 hover:bg-reno-100 dark:text-reno-100 dark:hover:bg-reno-800;
+  }
+  .btn-outline {
+    @apply btn border border-reno-300 text-reno-800 hover:bg-reno-100 dark:border-reno-700 dark:text-reno-100 dark:hover:bg-reno-800;
+  }
+
+  .panel {
+    @apply rounded-xl border border-reno-200 bg-white p-5 dark:border-reno-700 dark:bg-reno-800;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-reno-200 bg-reno-50 px-2.5 py-0.5 text-[11px] font-medium text-reno-700 dark:border-reno-700 dark:bg-reno-800 dark:text-reno-200;
+  }
+
+  .link-muted {
+    @apply text-reno-600 transition-colors hover:text-reno-900 dark:text-reno-300 dark:hover:text-white;
+  }
+
+  .section {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .heading {
+    @apply font-display font-black tracking-tight text-reno-900 dark:text-white;
+  }
+
+  /* text-base على الموبايل يمنع تقريب Safari عند التركيز (خط < 16px) */
+  .input {
+    @apply w-full rounded-lg border border-reno-200 bg-white px-3 py-2 text-base outline-none transition-colors placeholder:text-reno-400 focus:border-reno-400 focus:ring-2 focus:ring-reno-400/30 dark:border-reno-700 dark:bg-reno-900 dark:placeholder:text-reno-500 sm:text-sm;
+  }
+
+  /**
+   * Shimmer تحميل — شريط ضوء يمرّ على الخلفية (يُستخدم مع صفحات التفاصيل وغيرها).
+   */
+  .shimmer-fill {
+    @apply relative overflow-hidden bg-reno-200/90 dark:bg-reno-700/75;
+  }
+
+  .shimmer-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.55),
+      transparent
+    );
+    animation: saqer-shimmer 1.35s ease-in-out infinite;
+  }
+
+  .dark .shimmer-fill::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+  }
+}
+
+@keyframes saqer-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-fill::after {
+    animation: none;
+    opacity: 0;
+  }
+}

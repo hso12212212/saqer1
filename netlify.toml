@@ -1,0 +1,12 @@
+# إعدادات Netlify — الواجهة (Vite + React)
+# الخادم (Express + Postgres) يُنشر على خدمة أخرى (Railway، Render، …)
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# React Router: كل المسارات تُخدم index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
