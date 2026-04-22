@@ -1,0 +1,17 @@
+# تكوين Nixpacks لـ Railway
+# يُجبر تثبيت devDependencies (typescript, tsx, @types/*) لأن البناء يحتاجها.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start:prod"
+
+[variables]
+NPM_CONFIG_PRODUCTION = "false"
