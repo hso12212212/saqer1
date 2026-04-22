@@ -17,10 +17,37 @@ import { uploadsDir } from './upload.js'
 const app = express()
 const port = Number(process.env.PORT ?? 3001)
 
-const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()).filter(Boolean)
+const corsOrigins = (process.env.CORS_ORIGIN ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
+
+const allowAll = corsOrigins.length === 0
+
 app.use(
   cors({
-    origin: corsOrigin && corsOrigin.length > 0 ? corsOrigin : true,
+    origin(origin, cb) {
+      // طلبات server-to-server أو نفس الأصل (بدون رأس Origin) مسموحة.
+      if (!origin) return cb(null, true)
+      if (allowAll) return cb(null, true)
+
+      const ok = corsOrigins.some((allowed) => {
+        if (allowed === origin) return true
+        // سماح لجميع نطاقات Netlify الفرعية (deploy-preview, branch deploys) عند إدراج *.netlify.app
+        if (allowed.includes('*')) {
+          const pattern = new RegExp(
+            '^' + allowed.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$',
+          )
+          return pattern.test(origin)
+        }
+        return false
+      })
+
+      if (ok) return cb(null, true)
+      // eslint-disable-next-line no-console
+      console.warn(`[cors] أصل مرفوض: ${origin} — المسموح: ${corsOrigins.join(', ')}`)
+      return cb(new Error(`CORS: origin ${origin} غير مسموح`))
+    },
     credentials: true,
   }),
 )
