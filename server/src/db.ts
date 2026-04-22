@@ -59,8 +59,11 @@ export const pool = new Pool({
 })
 
 pool.on('error', (err) => {
+  // اتصال خامل أُغلق من جهة Postgres — pg يُنشئ اتصالًا جديدًا عند الاستعلام التالي.
+  // هذا تحذير معتاد في بيئات السحابة (Railway/Render/…) وليس خطأً مؤثّرًا.
+  const msg = err instanceof Error ? err.message : String(err)
   // eslint-disable-next-line no-console
-  console.error('[db] unexpected pool error', err)
+  console.warn(`[db] idle connection dropped (سيُعاد الاتصال تلقائيًا): ${msg}`)
 })
 
 export async function query<T extends QueryResultRow = QueryResultRow>(
