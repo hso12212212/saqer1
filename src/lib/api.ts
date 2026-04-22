@@ -47,6 +47,16 @@ export const token = {
 
 type BodyInit_ = Record<string, unknown> | FormData | undefined
 
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 async function request<T>(
   path: string,
   opts: {
@@ -80,13 +90,18 @@ async function request<T>(
   if (res.status === 204) return undefined as T
   if (!res.ok) {
     let message = `API ${res.status}`
-    try {
-      const j = (await res.json()) as { error?: string }
-      if (j.error) message = j.error
-    } catch {
-      /* ignore */
+    const text = await res.text()
+    if (text) {
+      try {
+        const j = JSON.parse(text) as { error?: string; message?: string }
+        if (typeof j.error === 'string' && j.error) message = j.error
+        else if (typeof j.message === 'string' && j.message) message = j.message
+      } catch {
+        const t = text.trim()
+        if (t && !t.startsWith('<') && t.length < 500) message = t
+      }
     }
-    throw new Error(message)
+    throw new ApiError(res.status, message)
   }
   if (raw) return (await res.json()) as T
   const json = (await res.json()) as ApiResponse<T>

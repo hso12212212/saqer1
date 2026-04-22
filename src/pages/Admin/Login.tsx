@@ -3,6 +3,33 @@ import { useLocation, useNavigate, type Location } from 'react-router-dom'
 import { Loader2, Lock, LogIn, Mail } from 'lucide-react'
 import FalconLogo from '../../components/FalconLogo'
 import { useAuth } from '../../context/AuthContext'
+import { ApiError } from '../../lib/api'
+
+function loginErrorMessage(err: unknown): string {
+  const status = err instanceof ApiError ? err.status : undefined
+  const code =
+    err instanceof ApiError
+      ? err.message
+      : err instanceof Error
+        ? err.message
+        : ''
+  const lower = code.toLowerCase()
+
+  if (
+    status === 401 ||
+    code === 'invalid_credentials' ||
+    lower.includes('invalid_credentials') ||
+    lower === 'unauthorized' ||
+    /^api\s*401$/.test(lower)
+  ) {
+    return 'البريد أو كلمة المرور غير صحيحة'
+  }
+  if (status === 400 || code === 'invalid_body') {
+    return 'يرجى إدخال البريد الإلكتروني وكلمة المرور بشكل صحيح'
+  }
+  if (code && code !== `API ${status}`) return code
+  return 'تعذّر تسجيل الدخول. تحقّق من الاتصال وحاول مرة أخرى.'
+}
 
 interface LocationState {
   from?: Location
@@ -32,12 +59,7 @@ export default function AdminLogin() {
       await login(email, password)
       navigate(redirectTo, { replace: true })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل تسجيل الدخول'
-      setError(
-        msg === 'invalid_credentials'
-          ? 'البريد أو كلمة المرور غير صحيحة'
-          : msg,
-      )
+      setError(loginErrorMessage(err))
     } finally {
       setLoading(false)
     }
