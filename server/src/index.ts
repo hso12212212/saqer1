@@ -17,23 +17,23 @@ import { uploadsDir } from './upload.js'
 const app = express()
 const port = Number(process.env.PORT ?? 3001)
 
+// CORS — على نمط classi.store:
+//  - في الإنتاج: Netlify يُوكّل الطلبات → المتصفح يراها same-origin، لا حاجة لـ CORS.
+//    نقبل أي أصل افتراضيًا (يمكن تقييده بوضع CORS_ORIGIN صراحة إن احتجت).
+//  - في التطوير: نقبل localhost:5173 (Vite) + أي أصل في LAN.
 const corsOrigins = (process.env.CORS_ORIGIN ?? '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean)
 
-const allowAll = corsOrigins.length === 0
-
 app.use(
   cors({
     origin(origin, cb) {
-      // طلبات server-to-server أو نفس الأصل (بدون رأس Origin) مسموحة.
       if (!origin) return cb(null, true)
-      if (allowAll) return cb(null, true)
+      if (corsOrigins.length === 0) return cb(null, true)
 
       const ok = corsOrigins.some((allowed) => {
         if (allowed === origin) return true
-        // سماح لجميع نطاقات Netlify الفرعية (deploy-preview, branch deploys) عند إدراج *.netlify.app
         if (allowed.includes('*')) {
           const pattern = new RegExp(
             '^' + allowed.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$',

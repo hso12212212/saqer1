@@ -35,6 +35,8 @@ interface ApiResponse<T> {
   error?: string
 }
 
+// نمط classi.store: نداءات نسبية (`/api/...`) و Netlify يُوكّلها لـ Railway.
+// إن ضُبط VITE_API_URL صراحةً فهو يتغلّب (مفيد للتطوير أو اختبار نطاق آخر).
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
 const TOKEN_KEY = 'saqer-admin-token'

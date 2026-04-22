@@ -1,11 +1,27 @@
-# إعدادات Netlify — الواجهة (Vite + React)
-# الخادم (Express + Postgres) يُنشر على خدمة أخرى (Railway، Render، …)
+# ─── Netlify: الواجهة فقط (Vite + React) + بروكسي للـ API ───
+# الخادم على Railway: https://saqer1-production.up.railway.app
+# Netlify يُوكّل طلبات /api/* و /uploads/* خلف الكواليس إلى Railway،
+# فيصبح كل شيء من منظور المتصفح على نفس الأصل → لا CORS ولا VITE_API_URL.
 
 [build]
   command = "npm run build"
   publish = "dist"
 
-# React Router: كل المسارات تُخدم index.html
+# Proxy (rewrite, status=200) لـ API — force=true حتى لا تتغلّب قواعد SPA عليه.
+[[redirects]]
+  from = "/api/*"
+  to = "https://saqer1-production.up.railway.app/api/:splat"
+  status = 200
+  force = true
+
+# الصور المرفوعة على الخادم (uploads) تُخدم من Railway عبر نفس الدومين.
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://saqer1-production.up.railway.app/uploads/:splat"
+  status = 200
+  force = true
+
+# React Router (SPA): كل ما تبقّى → index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"

@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# مشاريع مرجعية لا تنتمي لهذا المستودع
+classi.store/
+
 # env
 .env
 .env.*
