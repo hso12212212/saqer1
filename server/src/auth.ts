@@ -2,15 +2,25 @@ import { timingSafeEqual } from 'node:crypto'
 import jwt, { type JwtPayload } from 'jsonwebtoken'
 import type { Request, Response, NextFunction, RequestHandler } from 'express'
 
-const JWT_SECRET = process.env.JWT_SECRET ?? ''
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? ''
+// ─── قيم الإنتاج الافتراضية (تعمل بدون أي متغيّرات بيئة) ───
+// يمكن تجاوزها بوضع متغيّرات على Railway إن أردت لاحقًا.
+// غيّر البريد/الكلمة هنا بعد أوّل دخول إن أحببت.
+const PROD_ADMIN_EMAIL = 'saqer@admin.com'
+const PROD_ADMIN_PASSWORD = 'Saqer@2026'
+const PROD_JWT_SECRET =
+  'saqer-production-jwt-secret-fixed-a7f3e912b8c4d5e6f0a1b2c3d4e5f6a7b8c9d0e1f2'
+
+const JWT_SECRET = process.env.JWT_SECRET?.trim() || PROD_JWT_SECRET
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim() || PROD_ADMIN_EMAIL
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD?.trim() || PROD_ADMIN_PASSWORD
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7 // 7 أيام
 
-if (!JWT_SECRET) {
-  // eslint-disable-next-line no-console
-  console.warn('[auth] JWT_SECRET غير معرّف — لن تعمل المصادقة.')
-}
+// eslint-disable-next-line no-console
+console.log(
+  `[auth] جاهز — المشرف: ${ADMIN_EMAIL} | المصدر: ${
+    process.env.ADMIN_EMAIL ? 'env' : 'default'
+  }`,
+)
 
 function safeEqual(a: string, b: string): boolean {
   const aBuf = Buffer.from(a)
@@ -26,8 +36,10 @@ export interface AdminTokenPayload extends JwtPayload {
 
 export function verifyCredentials(email: string, password: string): boolean {
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return false
-  return safeEqual(email.trim().toLowerCase(), ADMIN_EMAIL.trim().toLowerCase())
-    && safeEqual(password, ADMIN_PASSWORD)
+  return (
+    safeEqual(email.trim().toLowerCase(), ADMIN_EMAIL.trim().toLowerCase()) &&
+    safeEqual(password, ADMIN_PASSWORD)
+  )
 }
 
 export function signAdminToken(email: string): string {
